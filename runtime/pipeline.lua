@@ -110,16 +110,18 @@ end
 
 function strips(next, list, points, ...)
 	for strip in all(list) do
+		local toggle = false
 		local b, c, a = points[strip[1]], points[strip[2]]
 
 		for i = 3, #strip do
 			a, b, c = b, c, points[strip[i]]
 
-			if i % 2 == 0 then 
+			if toggle then 
 				next(a, b, c, ...)
 			else
 				next(a, c, b, ...)
 			end
+			toggle = not toggle
 		end
 	end
 end
