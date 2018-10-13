@@ -12,7 +12,7 @@ function bham(x0, y0, x1, y1)
 	end
 end
 
-function triangle(color, x0, y0, x1, y1, x2, y2)
+function trifill(x0, y0, x1, y1, x2, y2, color)
 	if y1 < y0 then x0, y0, x1, y1 = x1, y1, x0, y0 end
 	if y2 < y0 then x0, y0, x2, y2 = x2, y2, x0, y0 end
 	if y2 < y1 then x2, y2, x1, y1 = x1, y1, x2, y2 end
@@ -26,6 +26,8 @@ function triangle(color, x0, y0, x1, y1, x2, y2)
 	for y = 1+y1, y2 do rectfill(b(), y, c(), y, color) end
 end
 
-function circle(color, xc, yc, r)
-  circfill(xc, yc, r, color)
+function tri(x0, y0, x1, y1, x2, y2, color)
+	line(x0, y0, x1, y1, color);
+	line(x0, y0, x2, y2, color);
+	line(x1, y1, x2, y2, color);
 end

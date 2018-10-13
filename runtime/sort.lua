@@ -1,25 +1,38 @@
 function sorter()
-	local top = {}
+	local top
 
 	return {
 		insert = function(cb, score, ...)
-			local item = {...}
-			local function insert(node)
-				if (not node.item) then
-					node.cb, node.item, node.score, node.parent, node.left, node.right = cb, item, score, nodes, {}, {}
+			local item = { cb = cb, score = score, ... }
+
+			if not top then top = item; return end
+
+			local node = top
+
+			while true do
+				if score > node.score then
+					if not node.left then 
+						node.left = item 
+						return 
+					end
+
+					node = node.left
 				else
-					insert(score > node.score and node.left or node.right)
+					if not node.right then 
+						node.right = item
+						return 
+					end
+
+					node = node.right
 				end
 			end
-			insert(top)
 		end,
+
 		iterate = function(each)
 			local function iterate(node)
-				if not node.item then
-					return
-				end
+				if not node then return end
 				iterate(node.left)
-				node.cb(unpack(node.item))
+				node.cb(unpack(node))
 				iterate(node.right)
 			end
 			iterate(top)

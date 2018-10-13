@@ -1,32 +1,23 @@
+cube_points = {
+	{-6,-6,-6},
+	{ 6,-6,-6},
+	{ 6, 6,-6},
+	{-6, 6,-6},
+	{-6,-6, 6},
+	{ 6,-6, 6},
+	{ 6, 6, 6},
+	{-6, 6, 6}
+}
+
+cube_strips = {
+	{ 5, 6, 1, 2, 4, 3, 8, 7 },
+	{ 1, 4, 5, 8, 6, 7, 2, 3 }
+}
+
 function _init()
 	for i, b in pairs(inflate(0)) do
 		poke(i, b)
 	end
-
-	cube_points = {
-		{-6,-6,-6},
-		{ 6,-6,-6},
-		{ 6, 6,-6},
-		{-6, 6,-6},
-		{-6,-6, 6},
-		{ 6,-6, 6},
-		{ 6, 6, 6},
-		{-6, 6, 6}
-	}
-	cube_faces = {
-		{1,3,2,1},
-		{1,4,3,1},
-		{5,6,7,2},
-		{5,7,8,2},
-		{1,5,8,3},
-		{1,8,4,3},
-		{6,2,7,4},
-		{2,3,7,4},
-		{1,2,5,5},
-		{2,6,5,5},
-		{3,4,7,6},
-		{4,8,7,6}
-	}
 
 	xr, yr, zr = 0, 0, 0
 end
@@ -37,44 +28,46 @@ function _update()
 	zr = zr + 17/1024
 end
 
-dither_gradient = {0x10, 0x51, 0x65, 0x76, 0x77}
+dither_gradient = { 0x10, 0x51, 0x65, 0x76, 0x77 }
 
-function render_tri(a, b, c, i)
+function render(a, b, c)
 	-- Project
-	local xa, ya = project(a)
-	local xb, yb = project(b)
-	local xc, yc = project(c)
+	local xa, ya = project_point(unpack(a))
+	local xb, yb = project_point(unpack(b))
+	local xc, yc = project_point(unpack(c))
 
 	-- Backface
 	if (xa-xb)*(yc-yb) > (xc-xb)*(ya-yb) then
-		return
+		-- Light and draw
+		local intensity = dot( 0, 0, -1, normal(a,b,c))
+		local pattern, color = light(intensity, dither_gradient)
+
+		fillp(pattern)
+		trifill(xa, ya, xb, yb, xc, yc, color)
 	end
-
-	-- Light and draw
-	local intensity = dot(0,0,1,normal(a,b,c))
-
-	local color = light(intensity, dither_gradient)
-	triangle(color, xa, ya, xb, yb, xc, yc)		
 end
 
 function _draw()
+	local scene = sorter()
 	cls()
 
-	local points = all(cube_points)
-	points = map(points, unpack)
-	points = transform(points, xr, yr, ze, 0, 0, -25)
-	points = flatten(points)
+	-- Vector stage
+	local points = vectors(
+		cube_points,
+		rotate(xr, yr, ze),
+		translate(0, 0, 25)
+	);
 
-	local scene = sorter()
+	-- Geometry stage
+	geometry(
+		{ cube_strips, points },	
+		strips,
+		scissor,
+		function (next, a, b, c, ...)
+			scene.insert(render, a[3] + b[3] + c[3], a, b, c, ...)
+		end
+	)
 
-	local function add_face(a, b, c, ...)
-		scene.insert(render_tri, a[3] + b[3] + c[3], a, b, c, ...)
-	end
-
-	-- This will be replaced
-	for face in all(cube_faces) do
-		fcs = scissor_tri(add_face, points, face)
-	end
-
+	-- Render all the remaining triangles
 	scene.iterate()
 end
