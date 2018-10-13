@@ -49,10 +49,10 @@ function cube(scene, x, y, z, xr, yr, zr, gradient)
 	-- Vector stage
 	local points = vectors(
 		cube_points,
+		scale(0.20,0.20,0.20),
 		translate(x, y, z),
 		rotate(xr, yr, zr),
-		scale(0.25,0.25,0.25),
-		translate(0, 0, 15)
+		translate(0, 0, 25)
 	);
 
 	-- Geometry stage
@@ -71,15 +71,17 @@ function _draw()
 	cls()
 
 	local dither_gradient = { 0x10, 0x51, 0x65, 0x76, 0x77 }
+	local blue_dither = { 0x10, 0xD1, 0xDD }
 	local wacky_dither = { 0x00, 0x10, 0x21, 0x32, 0x43, 0x54, 0x65, 0x76, 0x87, 0x98, 0x99 }
 
-	cube(scene,   0,   0,   0, -xr, -yr, -zr, wacky_dither)
-	cube(scene, -20,   0,   0, xr, yr, zr, dither_gradient)
-	cube(scene,   0, -20,   0, xr, yr, zr, dither_gradient)
-	cube(scene,   0,   0, -20, xr, yr, zr, dither_gradient)
-	cube(scene,   0,   0,  20, xr, yr, zr, dither_gradient)
-	cube(scene,   0,  20,   0, xr, yr, zr, dither_gradient)
-	cube(scene,  20,   0,   0, xr, yr, zr, dither_gradient)
+	cube(scene,  0,  0,  0, -xr, -yr, -zr,    wacky_dither)
+	cube(scene, -5,  0,  0, -xr,  yr,  zr,     blue_dither)
+	cube(scene,  0, -5,  0,  xr, -yr,  zr,     blue_dither)
+	cube(scene,  0,  0, -5,  xr,  yr, -zr,     blue_dither)
+
+	cube(scene,  0,  0, 10,  xr, -yr, -zr, dither_gradient)
+	cube(scene,  0, 10,  0, -xr, -yr,  zr, dither_gradient)
+	cube(scene, 10,  0,  0, -xr,  yr, -zr, dither_gradient)
 
 	-- Render all the remaining triangles
 	scene.iterate()
