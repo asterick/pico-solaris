@@ -135,7 +135,7 @@ function inflate(index)
 			ins_tbl = build(1 + hdist)
 			compressed()
 		else
-			if (tbits) then
+			if (tbits > 0) then
 				tbits, index = 0, index + 1
 			end
 			local len = bits(16) bits(16)

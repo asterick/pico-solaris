@@ -45,12 +45,13 @@ end
 
 function cube(scene, position, rotation, gradient)
 	-- vertex stage
+	local rot = rotate(rotation)
 	local points = vertexs(
 		cube_points,
-		scale(0.2),
-		translate(position),
-		rotate(rotation),
-		translate(vertex(0, 0, 25))
+		
+		function(p)
+			return rot(p * 0.2 + position) + vertex(0, 0, 25)
+		end
 	);
 
 	-- Geometry stage

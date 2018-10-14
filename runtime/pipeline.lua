@@ -21,45 +21,18 @@ function rotate(e)
 	end
 end
 
-function translate(b)
-	return function(a)
-		return a+b
-	end
-end
-
-function scale(b)
-	return function(a)
-		return a*b
-	end
-end
-
 -- Create a lazy transformed vector (cached)
 function vertexs(points, ...)
-	local function chain(top, next, ...)
-		if next then 
-			local tail = chain(next, ...)
-			return function (p)
-				return tail(top(p))
-			end
-		else
-			return function (p)
-				return top(p)
-			end
-		end
-	end
-
-	local transform = chain(...)
+	local transform = {...}
 
 	return setmetatable({}, { 
 		__index = function (table, key)
+			local point = points[key]
 			if points[key] then
-				local out = transform(points[key])
-				table[key] = out
-				return out
+				for t in all(transform) do point = t(point) end
 			end
-		end,
-		__len = function() 
-			return #points
+			table[key] = point
+			return point
 		end
 	});
 end
@@ -84,14 +57,13 @@ function strips(next, list, points, ...)
 		local b, c, a = points[strip[1]], points[strip[2]]
 
 		for i = 3, #strip do
-			a, b, c = b, c, points[strip[i]]
+			toggle, a, b, c = not toggle, b, c, points[strip[i]]
 
 			if toggle then 
-				next(a, b, c, ...)
+				next(b, a, c, ...)
 			else
-				next(a, c, b, ...)
+				next(a, b, c, ...)
 			end
-			toggle = not toggle
 		end
 	end
 end
