@@ -1,5 +1,17 @@
-var fs = require("fs");
-var zlib = require("zlib");
+const fs = require("fs");
+const zlib = require("zlib");
+const os = require("os");
+
+function dest() {
+	switch (os.platform()) {
+	case 'darwin':
+		return "/Users/bryon/Library/Application Support/pico-8/carts/solaris.p8.png"
+	case 'win32':
+		return "C:\\Users\\unicd\\AppData\\Roaming\\pico-8\\carts\\solaris.p8.png"
+	default:
+		throw new Error(`Unknown platform ${os.platform()}`);
+	}
+}	
 
 function payload() {
 	var payload = [];
@@ -18,7 +30,7 @@ module.exports = function(grunt) {
 				],
 
 				src: ["runtime/main.lua", "runtime/**/*"],
-				dest: "/Users/bryon/Library/Application Support/pico-8/carts/solaris.p8.png",
+				dest: dest(),
 				payload: payload
 			}
 		},
