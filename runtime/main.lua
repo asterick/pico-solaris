@@ -65,13 +65,21 @@ function cube(scene, position, rotation, gradient)
 	)
 end
 
+function gen_material(t)
+	local color = t[#t]
+	for i = #t, 1, -1 do
+		color, t[i] = t[i], t[i] + color * 0x10
+	end
+	return t
+end
+
 function _draw()
 	local scene = sorter()
 	cls()
 
-	local dither_gradient = { 0x10, 0x51, 0x65, 0x76, 0x77 }
-	local blue_dither = { 0x10, 0xD1, 0xDD }
-	local wacky_dither = { 0x00, 0x10, 0x21, 0x32, 0x43, 0x54, 0x65, 0x76, 0x87, 0x98, 0x99 }
+	local blue_dither = gen_material({ 0x0, 0x1, 0xD })
+	local dither_gradient = gen_material({ 0x0, 0x1, 0x5, 0x6, 0x7 })
+	local wacky_dither = gen_material({ 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9 })
 
 	cube(scene, vertex( 0,  0,  0),     rotation,    wacky_dither)
 	cube(scene, vertex(-1,  0,  0), rotation*0.1,     blue_dither)
