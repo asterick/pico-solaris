@@ -14,7 +14,8 @@ function dest() {
 }	
 
 function payload() {
-	var payload = [];
+	var payload = new Array(0x4300);
+	for (var i = 0; i < 0x4300; i++) payload[i] = Math.random() * 0x10 & 0xFF
 
 	return zlib.deflateRawSync(new Buffer(payload), { level: 9 });
 }

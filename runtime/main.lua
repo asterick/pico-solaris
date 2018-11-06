@@ -1,7 +1,10 @@
 function _init()
-	for i, b in pairs(inflate(0)) do
+	local output = inflate(0)
+	for i, b in pairs(output) do
 		poke(i, b)
+		--print (i .. " " .. b)
 	end
+	print (#output)
 
 	cube_points = {
 		vertex(-6,-6,-6),
@@ -22,7 +25,7 @@ function _init()
 	rotation = vertex(0,0,0)
 end
 
-function _update()
+function update()
 	rotation += vertex(7/1024, 13/1024, 3/1024)
 end
 
@@ -73,7 +76,7 @@ function gen_material(t)
 	return t
 end
 
-function _draw()
+function draw()
 	local scene = sorter()
 	cls()
 
