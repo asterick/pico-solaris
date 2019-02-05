@@ -2,7 +2,6 @@ function _init()
 	local output = inflate(0)
 	for i, b in pairs(output) do
 		poke(i, b)
-		--print (i .. " " .. b)
 	end
 	print (#output)
 
@@ -25,7 +24,7 @@ function _init()
 	rotation = vertex(0,0,0)
 end
 
-function update()
+function _update()
 	rotation += vertex(7/1024, 13/1024, 3/1024)
 end
 
@@ -76,7 +75,7 @@ function gen_material(t)
 	return t
 end
 
-function draw()
+function _draw()
 	local scene = sorter()
 	cls()
 

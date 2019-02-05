@@ -1,14 +1,21 @@
-function inflate(index, base_tbl, ins_tbl, offs)
+function inflate(index, base_tbl, ins_tbl)
 	local function bits(n)
 		local out = 0
 		for i = 0, n-1 do
-			out += band(peek(index) * 2 ^ (i - index % 1 * 8), 2 ^ i)
-			index += 0x0.2
+			out += shl(band(1, peek(index) / 256 ^ (index % 1)), i)
+			index += 0x.2
 		end
 		return out
 	end
 
-	local function make_tbl(lens)
+	local function make_tbl(lens, count, width, ...)
+		if count then 
+			for k = 1, count do
+			 	add(lens, width)
+			end 
+			return def_tbl(lens, ...)
+		end
+
 		local idx, out = 0, {}
 		for b = 0, 15 do
 			for c = 0, 287 do
@@ -22,19 +29,9 @@ function inflate(index, base_tbl, ins_tbl, offs)
 		return out
 	end
 
-	local function def_tbl(x, count, width, ...)
-		if count then 
-			for k = 1, count do
-			 	add(x, width)
-			end 
-			return def_tbl(x, ...)
-		end
-		return make_tbl(x)
-	end
-
 	local function get_code(table)
 		local code = 0
-		for b=0, 0x0.F, 0x0.1 do
+		for b=0, 0x.f, 0x.1 do
 			code = code * 2 + bits(1)
 			local out = table[b + code]
 			if out then
@@ -43,16 +40,12 @@ function inflate(index, base_tbl, ins_tbl, offs)
 		end
 	end
 
-	local function get_int(code, width)
-		local offset = 0
-
-		for i = 0, code do
-			local extra = i / width - 1
-			if (i == code) then
-				return offset + bits(extra)
-			end
-			offset += 2 ^ flr(max(0, extra))
+	local function get_int(symbol, n)
+		if symbol > n then
+		local i = flr(symbol / n - 1)
+			return shl(symbol % n + n, i) + bits(i)
 		end
+		return symbol
 	end
 
 	local output = {}
@@ -61,25 +54,25 @@ function inflate(index, base_tbl, ins_tbl, offs)
 		local final, method = bits(1), bits(2)
 
 		if method == 1 then
-			-- These are special ones
-			base_tbl = def_tbl({}, 144, 8, 112, 9, 24, 7, 8, 8)
-			ins_tbl = def_tbl({}, 32, 5)
+			-- these are special ones
+			base_tbl = make_tbl({}, 144, 8, 112, 9, 24, 7, 8, 8)
+			ins_tbl = make_tbl({}, 32, 5)
 		elseif method == 2 then
-			-- Create dynamic table
-			base_tbl, ins_tbl, offs = 257 + bits(5), 1 + bits(5), {}
+			-- create dynamic table
+			base_tbl, ins_tbl, hf_tbl = 257 + bits(5), 1 + bits(5), {}
 
-			-- Create our code length table
+			-- create our code length table
 			for i=1, 4 + bits(4) do
-				offs[({ 17, 18, 19, 1, 9, 8, 10, 7, 11, 6, 12, 5, 13, 4, 14, 3, 15, 2, 16 })[i]] = bits(3)
+				hf_tbl[({ 17, 18, 19, 1, 9, 8, 10, 7, 11, 6, 12, 5, 13, 4, 14, 3, 15, 2, 16 })[i]] = bits(3)
 			end
 
-			offs = make_tbl(offs)
+			local hf_tbl = make_tbl(hf_tbl)
 
 			local function build(count)
 				local out = {}
 
 				while #out < count do
-					local code = get_code(offs)
+					local code = get_code(hf_tbl)
 
 					if code < 16 then
 						add(out, code)
@@ -114,7 +107,7 @@ function inflate(index, base_tbl, ins_tbl, offs)
 			else
 				local length = code < 285 and get_int(code - 257, 4) + 3 or 258
 
-				offs = get_int(get_code(ins_tbl), 2)
+				local offs = get_int(get_code(ins_tbl), 2)
 				for i = 1, length do
 					add(output, output[#output - offs])
 				end
